@@ -57,7 +57,6 @@ class Field {
         }    
     }
     throwError(message){
-        // possibly edit for the weird triple input section
         let errDiv = document.createElement("div")
         errDiv.classList.add("error")
         errDiv.textContent = message
@@ -92,7 +91,7 @@ class CreditCard {
         }
     }
     validateCVV(){
-        let regex = /^\d{3$/
+        let regex = /^\d{3}$/
         console.log("cvv test result " + regex.test(this.cvv))
         return regex.text(this.cvv)
     }
