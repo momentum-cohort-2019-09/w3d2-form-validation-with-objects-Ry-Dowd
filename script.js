@@ -11,8 +11,13 @@ function populateForm(){
         let temp = new Field(input)
         form.addField(temp)
     }
-
+    return form
 }
+qSelect("#parking-form").addEventListener('submit', function(event){
+    event.preventDefault()
+    let form = populateForm()
+    form.validate()
+})
 
 class Form {
     constructor() {
@@ -23,9 +28,18 @@ class Form {
     }
     clearErrors() {
         let errors = qSelectAll(".error")
-        for (let error in errors){
+        for (let error of errors){
             error.parentNode.removeChild(error)
         }
+    }
+    validate() {
+        this.clearErrors()
+        for(let field of this.fields){
+            field.validate()
+        }
+    }
+    getCreditCard(){
+        return new CreditCard(this.fields[6].content,this.fields[7].content,this.fields[8].content)
     }
 }
 
@@ -37,18 +51,24 @@ class Field {
     }
     validate() {
         if(!this.content){
-            this.throwError()
+            this.throwError(this.type + " is required")
         }else{
             this.showValid()
         }    
     }
-    throwError(){
-        this.field.classList.remove("input-valid")
-        this.field.classList.add("input-invalid")
+    throwError(message){
+        // possibly edit for the weird triple input section
+        let errDiv = document.createElement("div")
+        errDiv.classList.add("error")
+        errDiv.textContent = message
+        console.log(this.field)
+        this.field.parentNode.appendChild(errDiv)
+        this.field.parentNode.classList.remove("input-valid")
+        this.field.parentNode.classList.add("input-invalid")
     }
     showValid(){
-        this.field.classList.remove("input-invalid")
-        this.field.classList.add("input-valid")
+        this.field.parentNode.classList.remove("input-invalid")
+        this.field.parentNode.classList.add("input-valid")
     }
 }
 class CreditCard {
