@@ -13,11 +13,41 @@ function populateForm(){
     }
     return form
 }
+let today = new Date()
+
 qSelect("#parking-form").addEventListener('submit', function(event){
     event.preventDefault()
     let form = populateForm()
     form.validate()
 })
+
+let validDict = {
+    "car-info" : function validateCar(){
+        let regex = /^\d{4}$/
+        let year = this.content.slice(0,4)
+        if (!regex.test(year)){
+            this.throwError("Please make sure that your first four characters are a year")
+        } else {
+            if(year < 1900 || year > today.getFullYear()){
+                this.throwError("Enter a year between 1900 and now")
+            } else {
+                this.showValid()
+            }
+        }
+    },
+    "start-date": function validateDate(){
+        
+    },
+    // "days": validateDays(),
+    // "credit-card": validateCard(),
+    // "cvv": validateCVV(),
+    // "expiration": validateExpiration(),
+}
+class Validation{
+    constructor(test){
+        this.test = test
+    }
+}
 
 class Form {
     constructor() {
@@ -48,12 +78,15 @@ class Field {
         this.field = field
         this.content = field.value.trim()
         this.type = field.id
+        this.label = field.labels[0].textContent
+        this.validation = validDict[this.type] || this.showValid()
+        console.log(this.validation)
     }
     validate() {
         if(!this.content){
-            this.throwError(this.type + " is required")
+            this.throwError(this.label + " is required")
         }else{
-            this.showValid()
+            this.validation()
         }    
     }
     throwError(message){
