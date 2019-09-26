@@ -4,10 +4,10 @@ function qSelect(query) {
 function qSelectAll(query) {
     return document.querySelectorAll(query)
 }
-function populateForm(){
+function populateForm() {
     let form = new Form()
     let inputs = qSelectAll("input")
-    for (let input of inputs){
+    for (let input of inputs) {
         let temp = new Field(input)
         form.addField(temp)
     }
@@ -15,40 +15,77 @@ function populateForm(){
 }
 let today = new Date()
 
-qSelect("#parking-form").addEventListener('submit', function(event){
+qSelect("#parking-form").addEventListener('submit', function (event) {
     event.preventDefault()
     let form = populateForm()
     form.validate()
 })
-
 let validDict = {
-    "car-info" : function validateCar(){
+    "car-info": function validateCar() {
         let regex = /^\d{4}$/
-        let year = this.content.slice(0,4)
-        if (!regex.test(year)){
+        let year = this.content.slice(0, 4)
+        if (!regex.test(year)) {
             this.throwError("Please make sure that your first four characters are a year")
         } else {
-            if(year < 1900 || year > today.getFullYear()){
+            if (year < 1900 || year > today.getFullYear()) {
                 this.throwError("Enter a year between 1900 and now")
             } else {
                 this.showValid()
             }
         }
     },
-    "start-date": function validateDate(){
-        
+    "start-date": function validateDate() {
+        let startDate = new Date(this.content)
+        if (startDate >= today) {
+            this.showValid()
+        } else {
+            this.throwError("Please select a future date")
+        }
     },
-    // "days": validateDays(),
-    // "credit-card": validateCard(),
-    // "cvv": validateCVV(),
-    // "expiration": validateExpiration(),
-}
-class Validation{
-    constructor(test){
-        this.test = test
+    "days": function validateDays() {
+        if (this.content < 1 || this.content > 30) {
+            this.throwError("Please select a number of days between 1 and 30")
+        } else {
+            this.showValid()
+        }
+    },
+    "credit-card": function validateCard() {
+        let card = new CreditCard(this.content)
+        if (!card.validateCardNumber()) {
+            this.throwError("Please enter a valid credit card number")
+        } else {
+            this.showValid()
+        }
+    },
+    "cvv": function validateCVV() {
+        let regex = /^\d{3}$/
+        if (!regex.test(this.content)) {
+            this.throwError("please enter a valid CVV (3 digits)")
+        } else {
+            this.showValid()
+        }
+    },
+    "expiration": function validateExpiration() {
+        let regex = /^\d{2}\/\d{2}$/
+        if (!regex.test(this.content)) {
+            this.throwError("Please format your expiration properly (MM/YY)")
+        } else {
+            let month = this.content.slice(0, 2)
+            let year = this.content.slice(3)
+            if (month === 0 || month > 12) {
+                this.throwError("Please enter a valid month")
+            } else if (year < 19) {
+                this.throwError("Your card is expired")
+            } else if (year = 19) {
+                if ((+month - 1) < today.getMonth) {
+                    this.throwError("Your card is expired")
+                }
+            } else {
+                this.showValid()
+            }
+        }
     }
 }
-
 class Form {
     constructor() {
         this.fields = []
@@ -57,39 +94,41 @@ class Form {
         this.fields.push(field)
     }
     clearErrors() {
+        validForm = true
         let errors = qSelectAll(".error")
-        for (let error of errors){
+        for (let error of errors) {
             error.parentNode.removeChild(error)
         }
     }
     validate() {
         this.clearErrors()
-        for(let field of this.fields){
+        for (let field of this.fields) {
             field.validate()
         }
-    }
-    getCreditCard(){
-        return new CreditCard(this.fields[6].content,this.fields[7].content,this.fields[8].content)
+        if(validForm){
+            
+        }
     }
 }
-
 class Field {
     constructor(field) {
         this.field = field
         this.content = field.value.trim()
         this.type = field.id
         this.label = field.labels[0].textContent
-        this.validation = validDict[this.type] || this.showValid()
+        this.validation = validDict[this.type]
         console.log(this.validation)
     }
     validate() {
-        if(!this.content){
+        if (!this.content) {
             this.throwError(this.label + " is required")
-        }else{
+        } else if(this.validation){
             this.validation()
-        }    
+        }else{
+            this.showValid()
+        }
     }
-    throwError(message){
+    throwError(message) {
         let errDiv = document.createElement("div")
         errDiv.classList.add("error")
         errDiv.textContent = message
@@ -97,36 +136,23 @@ class Field {
         this.field.parentNode.appendChild(errDiv)
         this.field.parentNode.classList.remove("input-valid")
         this.field.parentNode.classList.add("input-invalid")
+        validForm = false
     }
-    showValid(){
+    showValid() {
         this.field.parentNode.classList.remove("input-invalid")
         this.field.parentNode.classList.add("input-valid")
     }
 }
 class CreditCard {
-    constructor(number, cvv, expiration) {
+    constructor(number) {
         this.number = number
-        this.cvv = cvv
-        this.expiration = expiration
     }
-    validateCardNumber(number) {
+    validateCardNumber() {
         var regex = new RegExp("^[0-9]{16}$");
-        if (!regex.test(number))
+        if (!regex.test(this.number))
             return false;
 
-        return this.luhnCheck(number);
-    }
-    validateExpiration(){
-        let regex = /^\d{2}\/\d{2}$/
-        console.log("expiration format test " + CanvasRenderingContext2D.test(this.expiration))
-        if (!regex.test(this.expiration)){
-            return false
-        }
-    }
-    validateCVV(){
-        let regex = /^\d{3}$/
-        console.log("cvv test result " + regex.test(this.cvv))
-        return regex.text(this.cvv)
+        return this.luhnCheck(this.number);
     }
     luhnCheck(val) {
         var sum = 0;
@@ -141,8 +167,5 @@ class CreditCard {
             sum += intVal;
         }
         return (sum % 10) == 0;
-    }
-    validate() {
-        return this.validateCardNumber(this.number)
     }
 }
