@@ -14,7 +14,7 @@ function populateForm() {
     return form
 }
 let today = new Date()
-
+let validForm = true
 qSelect("#parking-form").addEventListener('submit', function (event) {
     event.preventDefault()
     let form = populateForm()
@@ -43,7 +43,10 @@ let validDict = {
         }
     },
     "days": function validateDays() {
-        if (this.content < 1 || this.content > 30) {
+        let regex = /^\d{1,2}$/
+        if (!regex.test(this.content)){
+            this.throwError("Please enter a number between 1 and 30")
+        } else if (this.content < 1 || this.content > 30) {
             this.throwError("Please select a number of days between 1 and 30")
         } else {
             this.showValid()
@@ -70,15 +73,21 @@ let validDict = {
         if (!regex.test(this.content)) {
             this.throwError("Please format your expiration properly (MM/YY)")
         } else {
+            console.log("inside else")
             let month = this.content.slice(0, 2)
             let year = this.content.slice(3)
-            if (month === 0 || month > 12) {
+            console.log(month,year)
+            if (month == 0 || month > 12) {
                 this.throwError("Please enter a valid month")
             } else if (year < 19) {
                 this.throwError("Your card is expired")
-            } else if (year = 19) {
-                if ((+month - 1) < today.getMonth) {
+            } else if (year == 19) {
+                console.log("inside final else")
+                if ((+month - 1) < today.getMonth()) {
+                    console.log("inside final if")
                     this.throwError("Your card is expired")
+                } else{
+                    this.showValid()
                 }
             } else {
                 this.showValid()
@@ -106,8 +115,27 @@ class Form {
             field.validate()
         }
         if(validForm){
-            
+            qSelect("#total").textContent = "Your total parking cost is $" + this.getPrice()
         }
+    }
+    getPrice(){
+        let  start =  new Date(this.fields[2].content)
+        start = start.getDay()
+        const days = this.fields[3].content
+        let price = 0
+        for(let day = 0; day<days; day++){
+            if(start === 0){
+                price += 7
+                start++
+            } else if(start < 6){
+                price += 5
+                start++
+            } else {
+                price += 7
+                start = 0
+            }
+        }
+        return price
     }
 }
 class Field {
