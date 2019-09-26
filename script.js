@@ -44,7 +44,7 @@ let validDict = {
     },
     "days": function validateDays() {
         let regex = /^\d{1,2}$/
-        if (!regex.test(this.content)){
+        if (!regex.test(this.content)) {
             this.throwError("Please enter a number between 1 and 30")
         } else if (this.content < 1 || this.content > 30) {
             this.throwError("Please select a number of days between 1 and 30")
@@ -76,7 +76,7 @@ let validDict = {
             console.log("inside else")
             let month = this.content.slice(0, 2)
             let year = this.content.slice(3)
-            console.log(month,year)
+            console.log(month, year)
             if (month == 0 || month > 12) {
                 this.throwError("Please enter a valid month")
             } else if (year < 19) {
@@ -86,7 +86,7 @@ let validDict = {
                 if ((+month - 1) < today.getMonth()) {
                     console.log("inside final if")
                     this.throwError("Your card is expired")
-                } else{
+                } else {
                     this.showValid()
                 }
             } else {
@@ -111,23 +111,24 @@ class Form {
     }
     validate() {
         this.clearErrors()
+        qSelect("#total").textContent = ""
         for (let field of this.fields) {
             field.validate()
         }
-        if(validForm){
+        if (validForm) {
             qSelect("#total").textContent = "Your total parking cost is $" + this.getPrice()
         }
     }
-    getPrice(){
-        let  start =  new Date(this.fields[2].content)
+    getPrice() {
+        let start = new Date(this.fields[2].content)
         start = start.getDay()
         const days = this.fields[3].content
         let price = 0
-        for(let day = 0; day<days; day++){
-            if(start === 0){
+        for (let day = 0; day < days; day++) {
+            if (start === 0) {
                 price += 7
                 start++
-            } else if(start < 6){
+            } else if (start < 6) {
                 price += 5
                 start++
             } else {
@@ -150,9 +151,9 @@ class Field {
     validate() {
         if (!this.content) {
             this.throwError(this.label + " is required")
-        } else if(this.validation){
+        } else if (this.validation) {
             this.validation()
-        }else{
+        } else {
             this.showValid()
         }
     }
